@@ -407,6 +407,7 @@ namespace Webdiyer.WebControls.AspNetCore
 
         internal static string EscapeIdSelector(string id)
         {
+            if (id is null) return string.Empty;
             var reg=new Regex(@"[.:[\]]");
             return '#' + reg.Replace(id, @"\$&");
         }
