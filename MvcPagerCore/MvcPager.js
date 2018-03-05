@@ -139,7 +139,7 @@ Webdiyer.MvcPager.prototype = {
             }
             //pagination items
             $(this.updateTarget).on("click", pagerSelector + " a[data-page-index]", function (e) {
-                newPageIndex = $(this).data("pageIndex");
+                newPageIndex = $(this).data("page-index");
                 e.preventDefault();
                 if (context.enableHistorySupport) {
                     context.__setPageIndex(context.pageIndexName, newPageIndex);
@@ -147,6 +147,24 @@ Webdiyer.MvcPager.prototype = {
                     context.__ajax(newPageIndex, { type: context.httpMethod, data: [] });
                 }
             });
+			/**
+			* 在指定的数据表单id后, 检测更新区域是否发生变化
+			* 测试阶段使用了 DOMNodeInserted 事件, 为了浏览器兼容性, 使用了window.setInterval来做检测.
+			*/
+			var _this = this;
+			$(_this.searchForm).submit(function () {
+				if (!_this.updateTarget || $(_this.updateTarget).length == 0) return;
+				var oldHtml = $(_this.updateTarget).html();
+				var listenUpdateTarget = window.setInterval(function () {
+					if (oldHtml != $(_this.updateTarget).html()) {
+						window.clearInterval(listenUpdateTarget);
+						//更新总页码数据
+						var _wrapper = $(_this.updateTarget).find("[data-pager-type='Webdiyer.MvcPager']:first");
+						_this.pageCount = _wrapper.data("pagecount");
+						_this.__fillPageIndexBox();
+					}
+				});
+			})
         }
         //page index box
         this.__bindPageIndexBox();
@@ -166,7 +184,7 @@ Webdiyer.MvcPager.prototype = {
                             context.__validateInput(event);
                         });
                     }
-                    if ($.trim(context.goToButton) !== "") {
+                    if ($.trim(context.goToButton) !== "" && $(context.goToButton).length > 0) {
                         $(context.updateTarget).on("click", context.goToButton, function () {
                             var newPageIndex = $(context.pageIndexBox).val();
                             context.goToPage(newPageIndex);
@@ -198,7 +216,7 @@ Webdiyer.MvcPager.prototype = {
                 context.__validateInput(event);
             });
         }
-        if ($.trim(context.goToButton) !== "") {
+        if ($.trim(context.goToButton) !== "" && $(context.goToButton).length > 0) {
             $(context.goToButton).click(function () {
                 var newPageIndex = $(context.pageIndexBox).val();
                 context.goToPage(newPageIndex);
